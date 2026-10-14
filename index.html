@@ -1,0 +1,857 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Holiday Packing List</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%A7%B3%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --bg: #f4f6f8;
+    --surface: #ffffff;
+    --surface-2: #eef2f5;
+    --text: #1b2430;
+    --muted: #5d6b7a;
+    --border: #d9e0e7;
+    --accent: #0f7c86;
+    --accent-ink: #ffffff;
+    --accent-soft: #d8eff1;
+    --done: #8a96a3;
+    --danger: #b3261e;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .06), 0 1px 3px rgba(16, 24, 40, .08);
+    --radius: 14px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1419;
+      --surface: #182028;
+      --surface-2: #212b35;
+      --text: #e6ebf0;
+      --muted: #9aa8b6;
+      --border: #2c3844;
+      --accent: #4fc3cc;
+      --accent-ink: #0b1a1c;
+      --accent-soft: #1d3a3e;
+      --done: #66737f;
+      --danger: #f2b8b5;
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1419;
+    --surface: #182028;
+    --surface-2: #212b35;
+    --text: #e6ebf0;
+    --muted: #9aa8b6;
+    --border: #2c3844;
+    --accent: #4fc3cc;
+    --accent-ink: #0b1a1c;
+    --accent-soft: #1d3a3e;
+    --done: #66737f;
+    --danger: #f2b8b5;
+    --shadow: none;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 16px 48px; }
+
+  /* ---------- sticky header ---------- */
+  .top {
+    position: sticky; top: 0; z-index: 10;
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  .top .wrap { padding-top: 12px; padding-bottom: 12px; }
+  .top-row { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  h1 { font-size: 1.25rem; margin: 0; letter-spacing: -.01em; }
+  .count { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .9rem; white-space: nowrap; }
+  .summary { color: var(--muted); font-size: .85rem; margin-top: 2px; }
+  .bar { height: 8px; background: var(--surface-2); border-radius: 99px; overflow: hidden; margin-top: 10px; }
+  .bar > span { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 99px; transition: width .25s ease; }
+
+  /* ---------- setup card ---------- */
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 16px; margin-top: 16px;
+  }
+  .field + .field { margin-top: 14px; }
+  .label { font-size: .78rem; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin-bottom: 8px; }
+  .chips { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    appearance: none; border: 1px solid var(--border); background: var(--surface-2); color: var(--text);
+    border-radius: 99px; padding: 8px 14px; font: inherit; font-size: .92rem; cursor: pointer;
+    min-height: 40px; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+  .chip:focus-visible, .btn:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .setup-grid { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 14px; }
+  @media (min-width: 600px) { .setup-grid { grid-template-columns: auto 1fr auto; column-gap: 32px; } }
+  .setup-grid .field + .field { margin-top: 0; }
+  .stepper { display: inline-flex; align-items: center; border: 1px solid var(--border); border-radius: 99px; background: var(--surface-2); }
+  .stepper button { appearance: none; border: 0; background: none; color: var(--text); font: inherit; font-size: 1.2rem; width: 40px; height: 40px; cursor: pointer; border-radius: 99px; }
+  .stepper output { min-width: 2.2ch; text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+  .actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--border); }
+  .btn {
+    appearance: none; border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    border-radius: 10px; padding: 8px 12px; font: inherit; font-size: .9rem; cursor: pointer; min-height: 40px;
+  }
+  .btn[aria-pressed="true"] { background: var(--accent-soft); border-color: var(--accent); }
+  .btn.danger { color: var(--danger); }
+  .hint { font-size: .85rem; color: var(--muted); margin: 10px 0 0; }
+
+  /* ---------- sections ---------- */
+  .section { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); margin-top: 16px; overflow: hidden; }
+  .section > summary {
+    list-style: none; cursor: pointer; padding: 14px 16px; display: grid;
+    grid-template-columns: auto 1fr auto auto; align-items: center; gap: 10px;
+  }
+  .section > summary::-webkit-details-marker { display: none; }
+  .section > summary .icon { font-size: 1.3rem; }
+  .section > summary h2 { font-size: 1.08rem; margin: 0; }
+  .sec-count { font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+  .chev { width: 10px; height: 10px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); transition: transform .2s; margin: 0 4px 4px; }
+  .section[open] > summary .chev { transform: rotate(-135deg); margin-bottom: -2px; }
+  .section > summary .bar { grid-column: 1 / -1; margin-top: 0; height: 4px; }
+  .section.complete > summary h2::after { content: " ✓"; color: var(--accent); }
+
+  .group { padding: 4px 16px 12px; border-top: 1px solid var(--border); }
+  .group h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 12px 0 4px; display: flex; justify-content: space-between; }
+  .group h3 span { font-weight: 500; font-variant-numeric: tabular-nums; }
+  ul.items { list-style: none; margin: 0; padding: 0; }
+  ul.items li { display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed var(--border); }
+  ul.items li:last-child { border-bottom: 0; }
+  .item { flex: 1; display: flex; align-items: center; gap: 12px; padding: 9px 0; cursor: pointer; min-height: 44px; }
+  .item input { width: 22px; height: 22px; margin: 0; flex: none; accent-color: var(--accent); cursor: pointer; }
+  .item .txt { flex: 1; min-width: 0; }
+  .item .note { display: block; font-size: .8rem; color: var(--muted); }
+  .item .qty { font-size: .82rem; font-weight: 600; color: var(--accent); background: var(--accent-soft); padding: 2px 8px; border-radius: 99px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .item .mine { font-size: .7rem; color: var(--muted); border: 1px solid var(--border); padding: 1px 6px; border-radius: 99px; margin-left: 6px; vertical-align: 1px; }
+  li.packed .name { text-decoration: line-through; color: var(--done); }
+  li.packed .qty { opacity: .5; }
+  .remove { appearance: none; border: 0; background: none; color: var(--muted); font-size: 1.2rem; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; }
+  .remove:hover { color: var(--danger); background: var(--surface-2); }
+  .all-packed { color: var(--muted); font-size: .9rem; padding: 8px 0; }
+
+  form.add { display: flex; gap: 8px; margin-top: 8px; }
+  form.add input {
+    flex: 1; min-width: 0; font: inherit; font-size: .9rem; padding: 8px 10px; border-radius: 10px;
+    border: 1px dashed var(--border); background: transparent; color: var(--text);
+  }
+  form.add input::placeholder { color: var(--muted); }
+  form.add button { font-size: .85rem; min-height: 36px; padding: 6px 12px; }
+
+  .empty { text-align: center; color: var(--muted); padding: 32px 16px; }
+  footer { color: var(--muted); font-size: .8rem; text-align: center; margin-top: 28px; }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 20px); opacity: 0; pointer-events: none;
+    background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 10px; font-size: .9rem;
+    transition: opacity .2s, transform .2s; z-index: 20; max-width: calc(100% - 32px);
+  }
+  .toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+  @media print {
+    :root { --bg: #fff; --surface: #fff; --text: #000; --muted: #444; --border: #bbb; --shadow: none; }
+    .top { position: static; backdrop-filter: none; border: 0; }
+    .setup, form.add, .remove, .toast, footer, .section > summary .chev, .bar { display: none !important; }
+    .section { border: 0; margin-top: 8px; }
+    .group { break-inside: avoid; border: 0; padding-bottom: 4px; }
+    .item { min-height: 0; padding: 3px 0; }
+    ul.items li { border: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <div class="top-row">
+      <h1>🧳 Holiday packing list</h1>
+      <span class="count" id="count"></span>
+    </div>
+    <div class="summary" id="summary"></div>
+    <div class="bar" aria-hidden="true"><span id="bar"></span></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="card setup" aria-label="Trip setup">
+    <div class="field">
+      <div class="label" id="lbl-trips">Holiday type <span style="text-transform:none;letter-spacing:0;font-weight:400">(pick one or more)</span></div>
+      <div class="chips" id="trips" role="group" aria-labelledby="lbl-trips"></div>
+    </div>
+    <div class="setup-grid">
+      <div class="field">
+        <div class="label" id="lbl-who">Who's coming</div>
+        <div class="chips" id="who" role="group" aria-labelledby="lbl-who"></div>
+      </div>
+      <div class="field">
+        <div class="label" id="lbl-travel">Travel</div>
+        <div class="chips" id="travel" role="group" aria-labelledby="lbl-travel"></div>
+      </div>
+      <div class="field">
+        <div class="label" id="lbl-nights">Nights</div>
+        <div class="stepper" role="group" aria-labelledby="lbl-nights">
+          <button type="button" id="nights-dec" aria-label="Fewer nights">−</button>
+          <output id="nights" aria-live="polite"></output>
+          <button type="button" id="nights-inc" aria-label="More nights">+</button>
+        </div>
+      </div>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn" id="hide-packed" aria-pressed="false">Hide packed</button>
+      <button type="button" class="btn" id="toggle-all">Collapse all</button>
+      <button type="button" class="btn" id="share">🔗 Copy link</button>
+      <button type="button" class="btn" id="print">🖨️ Print</button>
+      <button type="button" class="btn danger" id="reset">Untick all</button>
+    </div>
+    <p class="hint" id="hint" hidden></p>
+  </section>
+
+  <div id="list"></div>
+
+  <footer>Ticks and your own items are saved in this browser only. “Copy link” shares the trip settings, not the ticks.</footer>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* =====================================================================
+   PACKING LIST DATA — edit this block to change the list.
+
+   Each item is: [name, trips, who, travel, options]
+     trips   space-separated holiday types it applies to, or "*" for all:
+             beach city ski business camping road
+     who     "" for everyone, or any of: baby kids
+             (shown if ANY listed is selected)
+     travel  "" for always, or any of: flying driving abroad
+             (shown if ANY listed is selected)
+     options optional { note: "...", q: [perNight, extra] }
+             q shows a quantity hint: ceil(nights × perNight + extra)
+   Items after an "// added" comment were not in the original list.
+   ===================================================================== */
+const TRIPS = [
+  { id: "beach",    label: "🏖️ Beach / pool" },
+  { id: "city",     label: "🏙️ City break" },
+  { id: "ski",      label: "⛷️ Ski / winter" },
+  { id: "business", label: "💼 Business" },
+  { id: "camping",  label: "⛺ Camping" },
+  { id: "road",     label: "🚗 Road trip" },
+];
+const WHO = [
+  { id: "baby", label: "👶 Baby" },
+  { id: "kids", label: "🧒 Kids" },
+];
+const TRAVEL = [
+  { id: "flying",  label: "✈️ Flying" },
+  { id: "driving", label: "🚙 Driving" },
+  { id: "abroad",  label: "🌍 Abroad" },
+];
+const DEFAULTS = { trips: ["beach"], who: ["baby", "kids"], travel: ["flying", "abroad"], nights: 7 };
+
+const NOT_BUSINESS = "beach city ski camping road";
+const SUNNY = "beach city camping road";
+
+const SECTIONS = [
+  { id: "main", name: "Main luggage", icon: "🧳", groups: [
+    { name: "Clothes", items: [
+      ["Shorts", SUNNY, "", "", { q: [0.5, 1] }],
+      ["T-shirts", "*", "", "", { q: [1, 0] }],
+      ["Summer dress", "beach city road"],
+      ["Smart clothes", "beach city ski road", "", "", { note: "for evenings out" }],
+      ["Swim costume", "beach camping road"],
+      ["Hooded towel", "beach", "baby kids"],
+      ["PJs", "*"],
+      ["Vests", "*"],
+      ["Underwear", "*", "", "", { q: [1, 1] }],
+      ["Socks", "*", "", "", { q: [1, 1] }],
+      ["Bra", "*"],
+      ["Muslins", "*", "baby"],
+      ["Bibs", "*", "baby"],
+      ["Shoes", "*"],
+      ["Flip flops / clogs", SUNNY],
+      ["Water shoes", "beach"],
+      ["Wet suit", "beach"],
+      ["Gym clothes", "*"],
+      ["Belt", "*"],
+      ["Accessories", "*"],
+      ["Suit", "business"],
+      ["Shirts", "business", "", "", { q: [1, 0] }],
+      ["Business cards", "business"],
+      ["Outfit for celebrations", "beach city ski business road", "", "", { note: "weddings, parties, special dinners" }],
+      ["Smart shoes", "beach city business road"],
+      // added
+      ["Light jacket / cardigan", "*"],
+      ["Rain jacket", "city camping road"],
+      ["Comfy hoodie for the journey", "*", "", "flying driving"],
+      ["Comfortable walking shoes", "city"],
+    ]},
+    // added group
+    { name: "Ski & snow", items: [
+      ["Ski jacket", "ski"],
+      ["Salopettes", "ski"],
+      ["Thermal base layers", "ski", "", "", { q: [0.3, 1] }],
+      ["Fleece / mid layer", "ski"],
+      ["Ski gloves", "ski"],
+      ["Ski socks", "ski", "", "", { q: [1, 0] }],
+      ["Ski goggles", "ski"],
+      ["Helmet", "ski"],
+      ["Neck warmer / buff", "ski"],
+      ["Hat (warm)", "ski"],
+      ["Snow boots", "ski"],
+      ["Hand warmers", "ski"],
+    ]},
+    { name: "Electronics", items: [
+      ["Chargers", "*"],
+      ["Power bank", "*"],
+      ["Adapter", "*", "", "abroad", { note: "plug adapter" }],
+      ["Watch charger", "*"],
+      ["Fire stick", "beach city ski business road", "", "", { note: "for the hotel TV" }],
+      ["USB fan", SUNNY],
+      ["Kindle", "*"],
+      ["Baby monitor", "*", "baby"],
+      ["eSIM (Ubigi)", "*", "", "abroad", { note: "set up before you go" }],
+      // added
+      ["Phone", "*"],
+      ["Laptop + charger", "business"],
+      ["Travel extension lead", "*"],
+      ["Camera", "*"],
+    ]},
+    { name: "Other", items: [
+      ["Sun hats", SUNNY],
+      ["Sunglasses", "*"],
+      ["Snacks", "*"],
+      ["Calpol", "*", "baby kids"],
+      ["Goggles", "beach", "", "", { note: "swimming" }],
+      ["Floatie / pool balls", "beach", "", "", { note: "rugby, football and skimmer" }],
+      ["Arm bands", "beach", "baby kids"],
+      ["Lounger clips", "beach"],
+      ["Sinkies", "beach", "kids"],
+      ["Plastic bags", "*"],
+      ["Beach bag", "beach"],
+      // added
+      ["Beach towels", "beach"],
+      ["Bucket & spade", "beach", "baby kids"],
+      ["Pop-up beach tent", "beach", "baby kids"],
+      ["Cool bag", "beach camping road"],
+      ["Umbrella", "city business"],
+      ["Day backpack", "city ski"],
+      ["Notebook & pen", "business"],
+      ["Laundry bag", "*"],
+    ]},
+    { name: "Toiletries", items: [
+      ["Shaver gel", "*"],
+      ["Shampoo", "*"],
+      ["Conditioner", "*"],
+      ["Hair gel", "*"],
+      ["Toothbrush", "*"],
+      ["Toothpaste", "*"],
+      ["Face cream", "*"],
+      ["Make up", "*"],
+      ["Hairbrush", "*"],
+      ["Sun cream", NOT_BUSINESS],
+      ["Tampon / pads", "*"],
+      ["Shaving kit", "*"],
+      ["Condoms", "*"],
+      ["Paracetamol", "*"],
+      ["Moisturiser", "*"],
+      ["Nappy cream", "*", "baby"],
+      ["Bobbles / clips", "*"],
+      ["Insect repellent", SUNNY],
+      // added
+      ["Deodorant", "*"],
+      ["Hand sanitiser", "*"],
+    ]},
+    // added group
+    { name: "Health & first aid", items: [
+      ["First-aid kit", "*"],
+      ["Plasters", "*"],
+      ["Prescription medication", "*"],
+      ["Antihistamine", "*"],
+      ["Rehydration sachets", "*", "", "abroad"],
+      ["Imodium", "*", "", "abroad"],
+      ["Calprofen", "*", "baby kids", "", { note: "children's ibuprofen" }],
+      ["Thermometer", "*", "baby kids"],
+      ["Travel sickness tablets / bands", "*", "", "flying driving"],
+      ["After-sun", "beach"],
+      ["SPF lip balm", "beach ski"],
+    ]},
+    { name: "Kids", items: [
+      ["Nappies", "*", "baby", "", { q: [6, 4] }],
+      ["Water nappies", "beach", "baby"],
+      ["Wipes", "*", "baby kids"],
+      ["Nappy bags", "*", "baby"],
+      ["Water bottles", "*", "baby kids"],
+      ["Toys", "*", "baby kids"],
+      ["Weetabix", "*", "baby kids"],
+      ["Airy avocado", "*", "baby kids", "", { note: "snacks" }],
+      ["Night light", "*", "baby kids"],
+      // added
+      ["Travel cot + sheets", "*", "baby"],
+      ["Pushchair / buggy", "*", "baby kids"],
+      ["Car seat", "*", "baby kids", "", { note: "if driving or hiring a car" }],
+      ["Baby carrier", "*", "baby"],
+      ["Milk / formula", "*", "baby"],
+      ["Bottles + steriliser", "*", "baby"],
+      ["Sippy cup", "*", "baby"],
+      ["UV sun suit", "beach", "baby kids"],
+      ["Comforter / favourite teddy", "*", "baby kids"],
+      ["Stickers / colouring", "*", "kids"],
+    ]},
+    // added group
+    { name: "Camping kit", items: [
+      ["Tent", "camping"],
+      ["Mallet + spare pegs", "camping"],
+      ["Sleeping bags", "camping"],
+      ["Sleeping mats / air beds + pump", "camping"],
+      ["Pillows", "camping"],
+      ["Head torches", "camping"],
+      ["Lantern", "camping"],
+      ["Camping stove + gas", "camping"],
+      ["Pots, plates & cutlery", "camping"],
+      ["Camping chairs", "camping"],
+      ["Washing-up kit", "camping"],
+      ["Bin bags", "camping"],
+    ]},
+  ]},
+  { id: "hand", name: "Hand luggage", icon: "🎒", groups: [
+    { name: "Essentials", items: [
+      ["Nappies", "*", "baby"],
+      ["Wipes", "*", "baby kids"],
+      ["Tissue", "*"],
+      ["Toys", "*", "baby kids"],
+      ["Muslin", "*", "baby"],
+      ["Bib", "*", "baby"],
+      ["Tablets x2", "*", "kids", "", { note: "charged, with shows downloaded" }],
+      ["Kindle", "*"],
+      ["Headphones (kids + adults)", "*"],
+      ["Spare clothes", "*"],
+      ["Spoon", "*", "baby kids"],
+      ["Lunch", "*"],
+      ["Dinner", "*"],
+      ["Empty water bottles", "*", "", "flying", { note: "fill up after security" }],
+      ["Charger", "*"],
+      ["Buds", "*", "", "", { note: "earbuds" }],
+      ["Sweets", "*"],
+      ["Passports", "*", "", "abroad"],
+      ["Keys", "*"],
+      ["Wallet / money", "*"],
+      ["Neck pillows", "*", "", "flying driving"],
+      // added
+      ["Clear liquids bag", "*", "", "flying"],
+      ["Pen", "*", "", "flying abroad", { note: "for forms" }],
+    ]},
+    // added group
+    { name: "Documents & money", items: [
+      ["Booking confirmations", "*"],
+      ["Boarding passes", "*", "", "flying"],
+      ["Travel insurance details", "*", "", "abroad"],
+      ["GHIC / EHIC cards", "*", "", "abroad"],
+      ["Passport photocopies", "*", "", "abroad"],
+      ["Driving licence", "*", "", "driving"],
+      ["Car hire documents", "*", "", "driving"],
+      ["Foreign currency", "*", "", "abroad"],
+      ["Travel credit card", "*", "", "abroad"],
+      ["Lift pass", "ski"],
+    ]},
+    // added group
+    { name: "In the car", items: [
+      ["Car phone mount + charger", "*", "", "driving"],
+      ["Drinks & car snacks", "*", "", "driving"],
+      ["Sick bags + kitchen roll", "*", "baby kids", "driving"],
+      ["Window sunshades", "*", "baby kids", "driving"],
+      ["Audiobooks / downloaded playlists", "*", "", "driving"],
+      ["Breakdown cover details", "*", "", "driving"],
+    ]},
+  ]},
+  { id: "morning", name: "Morning to-do", icon: "✅", groups: [
+    { name: "Before you leave", items: [
+      ["Pack last bits", "*"],
+      ["Make sandwiches / fruit / veg", "*"],
+      ["Pack brioche", "*"],
+      ["Put out bins", "*"],
+      ["Close / lock windows and doors", "*"],
+      ["Turn off heating", "*"],
+      ["Passport / documents", "*"],
+      ["Put keys in safe + remove keysafe", "*"],
+      // added
+      ["Check in online", "*", "", "flying"],
+      ["Check flight status", "*", "", "flying"],
+      ["Empty the fridge", "*"],
+      ["Water the plants", "*"],
+      ["Unplug appliances", "*"],
+      ["Set timer lights", "*"],
+      ["Set out-of-office", "business"],
+    ]},
+  ]},
+];
+/* ======================= end of data block ======================== */
+
+const STORE_KEY = "holiday-packing-list:v1";
+const $ = (id) => document.getElementById(id);
+const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const words = (s) => (s || "").split(/\s+/).filter(Boolean);
+
+// Normalise the data into item objects.
+for (const sec of SECTIONS) {
+  for (const g of sec.groups) {
+    g.key = sec.id + "/" + slug(g.name);
+    g.items = g.items.map(([name, trips, who, travel, opts = {}]) => ({
+      id: g.key + "/" + slug(name),
+      name,
+      trips: trips === "*" ? "*" : words(trips),
+      who: words(who),
+      travel: words(travel),
+      note: opts.note || "",
+      q: opts.q || null,
+    }));
+  }
+}
+
+// ---------- state ----------
+let state = {
+  ...DEFAULTS,
+  ticks: {},          // itemId -> true
+  extras: [],         // { id, name, group }
+  hidePacked: false,
+  collapsed: [],      // section ids
+};
+
+function load() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
+    if (saved && typeof saved === "object") state = { ...state, ...saved };
+  } catch (e) { /* storage blocked or corrupt: use defaults */ }
+  applyHash();
+}
+function save() {
+  try { localStorage.setItem(STORE_KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+}
+
+const ids = (list) => list.map((o) => o.id);
+function pick(value, allowed) {
+  return words((value || "").replace(/,/g, " ")).filter((v) => allowed.includes(v));
+}
+function applyHash() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (!h.has("trip")) return;
+  state.trips = pick(h.get("trip"), ids(TRIPS));
+  state.who = pick(h.get("with"), ids(WHO));
+  state.travel = pick(h.get("travel"), ids(TRAVEL));
+  const n = parseInt(h.get("nights"), 10);
+  if (n >= 1 && n <= 60) state.nights = n;
+}
+function hashString() {
+  return "trip=" + state.trips.join(",") + "&with=" + state.who.join(",") +
+         "&travel=" + state.travel.join(",") + "&nights=" + state.nights;
+}
+function syncHash() {
+  try { history.replaceState(null, "", "#" + hashString()); } catch (e) { /* ignore */ }
+}
+
+// ---------- filtering ----------
+const anyOf = (need, have) => need.length === 0 || need.some((x) => have.includes(x));
+function isVisible(item) {
+  const tripOk = item.trips === "*" || item.trips.some((t) => state.trips.includes(t));
+  return tripOk && anyOf(item.who, state.who) && anyOf(item.travel, state.travel);
+}
+function qtyFor(item) {
+  if (!item.q) return null;
+  return Math.max(1, Math.ceil(state.nights * item.q[0] + item.q[1]));
+}
+
+// ---------- setup controls ----------
+function renderChips(el, options, key) {
+  el.innerHTML = "";
+  for (const opt of options) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "chip";
+    b.textContent = opt.label;
+    b.setAttribute("aria-pressed", String(state[key].includes(opt.id)));
+    b.addEventListener("click", () => {
+      const on = state[key].includes(opt.id);
+      state[key] = on ? state[key].filter((x) => x !== opt.id) : [...state[key], opt.id];
+      b.setAttribute("aria-pressed", String(!on));
+      changed();
+    });
+    el.appendChild(b);
+  }
+}
+function renderSetup() {
+  renderChips($("trips"), TRIPS, "trips");
+  renderChips($("who"), WHO, "who");
+  renderChips($("travel"), TRAVEL, "travel");
+  $("nights").textContent = state.nights;
+  $("hide-packed").setAttribute("aria-pressed", String(state.hidePacked));
+}
+
+// ---------- list ----------
+let visibleBySection = {};  // secId -> [itemIds]
+let visibleByGroup = {};    // groupKey -> [itemIds]
+
+function el(tag, cls, text) {
+  const e = document.createElement(tag);
+  if (cls) e.className = cls;
+  if (text != null) e.textContent = text;
+  return e;
+}
+
+function itemRow(item, isExtra) {
+  const li = el("li");
+  li.dataset.id = item.id;
+  if (state.ticks[item.id]) li.classList.add("packed");
+  const label = el("label", "item");
+  const cb = el("input");
+  cb.type = "checkbox";
+  cb.checked = !!state.ticks[item.id];
+  cb.dataset.id = item.id;
+  const txt = el("span", "txt");
+  const name = el("span", "name", item.name);
+  txt.appendChild(name);
+  if (isExtra) txt.appendChild(el("span", "mine", "mine"));
+  if (item.note) txt.appendChild(el("span", "note", item.note));
+  label.append(cb, txt);
+  const q = isExtra ? null : qtyFor(item);
+  if (q) label.appendChild(el("span", "qty", "×" + q));
+  li.appendChild(label);
+  if (isExtra) {
+    const rm = el("button", "remove", "×");
+    rm.type = "button";
+    rm.title = "Remove";
+    rm.setAttribute("aria-label", "Remove " + item.name);
+    rm.dataset.remove = item.id;
+    li.appendChild(rm);
+  }
+  return li;
+}
+
+function renderList() {
+  const list = $("list");
+  list.innerHTML = "";
+  visibleBySection = {};
+  visibleByGroup = {};
+
+  for (const sec of SECTIONS) {
+    const secIds = [];
+    const details = el("details", "section");
+    details.dataset.sec = sec.id;
+    details.open = !state.collapsed.includes(sec.id);
+    details.addEventListener("toggle", () => {
+      if (printing) return;
+      const isCollapsed = state.collapsed.includes(sec.id);
+      if (details.open && isCollapsed) state.collapsed = state.collapsed.filter((x) => x !== sec.id);
+      else if (!details.open && !isCollapsed) state.collapsed = [...state.collapsed, sec.id];
+      else return;
+      save();
+      updateToggleAll();
+    });
+    const summary = el("summary");
+    summary.append(el("span", "icon", sec.icon), el("h2", null, sec.name), el("span", "sec-count"), el("span", "chev"));
+    const bar = el("div", "bar");
+    bar.appendChild(el("span"));
+    summary.appendChild(bar);
+    details.appendChild(summary);
+
+    for (const g of sec.groups) {
+      const items = g.items.filter(isVisible);
+      const extras = state.extras.filter((x) => x.group === g.key);
+      if (!items.length && !extras.length) continue;
+      const groupIds = [...ids(items), ...ids(extras)];
+      visibleByGroup[g.key] = groupIds;
+      secIds.push(...groupIds);
+
+      const box = el("div", "group");
+      box.dataset.group = g.key;
+      const h3 = el("h3", null, g.name);
+      h3.appendChild(el("span", "grp-count"));
+      box.appendChild(h3);
+      const ul = el("ul", "items");
+      for (const it of items) if (!(state.hidePacked && state.ticks[it.id])) ul.appendChild(itemRow(it, false));
+      for (const it of extras) if (!(state.hidePacked && state.ticks[it.id])) ul.appendChild(itemRow(it, true));
+      box.appendChild(ul);
+      if (!ul.children.length) box.appendChild(el("div", "all-packed", "All packed ✓"));
+
+      const form = el("form", "add");
+      form.dataset.group = g.key;
+      const input = el("input");
+      input.type = "text";
+      input.maxLength = 80;
+      input.placeholder = "Add your own…";
+      input.setAttribute("aria-label", "Add your own item to " + g.name);
+      const add = el("button", "btn", "Add");
+      add.type = "submit";
+      form.append(input, add);
+      box.appendChild(form);
+      details.appendChild(box);
+    }
+    if (!secIds.length) continue;
+    visibleBySection[sec.id] = secIds;
+    list.appendChild(details);
+  }
+
+  if (!list.children.length) list.appendChild(el("div", "card empty", "Nothing to show — pick a holiday type above."));
+  updateCounts();
+  updateToggleAll();
+}
+
+function countDone(idList) { return idList.filter((id) => state.ticks[id]).length; }
+
+function updateCounts() {
+  let total = 0, done = 0;
+  for (const [secId, idList] of Object.entries(visibleBySection)) {
+    const d = countDone(idList);
+    total += idList.length; done += d;
+    const sec = document.querySelector(`.section[data-sec="${secId}"]`);
+    sec.querySelector(".sec-count").textContent = d + " / " + idList.length;
+    sec.querySelector(".bar > span").style.width = (idList.length ? (100 * d) / idList.length : 0) + "%";
+    sec.classList.toggle("complete", d === idList.length);
+  }
+  for (const [gKey, idList] of Object.entries(visibleByGroup)) {
+    const g = document.querySelector(`.group[data-group="${gKey}"] .grp-count`);
+    if (g) g.textContent = countDone(idList) + " / " + idList.length;
+  }
+  $("count").textContent = done + " / " + total + " packed";
+  $("bar").style.width = (total ? (100 * done) / total : 0) + "%";
+}
+
+function updateSummary() {
+  const label = (list, chosen) => list.filter((o) => chosen.includes(o.id)).map((o) => o.label.replace(/^\S+\s/, ""));
+  const parts = [];
+  const t = label(TRIPS, state.trips);
+  parts.push(t.length ? t.join(" + ") : "No holiday type");
+  parts.push(state.nights + (state.nights === 1 ? " night" : " nights"));
+  const w = label(WHO, state.who);
+  if (w.length) parts.push("with " + w.join(" & ").toLowerCase());
+  const tr = label(TRAVEL, state.travel);
+  if (tr.length) parts.push(tr.join(", ").toLowerCase());
+  $("summary").textContent = parts.join(" · ");
+  const hint = $("hint");
+  hint.hidden = state.trips.length > 0;
+  hint.textContent = "Pick at least one holiday type to see trip-specific items. Only the everyday basics are shown.";
+}
+
+function updateToggleAll() {
+  const secs = [...document.querySelectorAll(".section")];
+  $("toggle-all").textContent = secs.some((s) => s.open) ? "Collapse all" : "Expand all";
+}
+
+function changed() {
+  save();
+  syncHash();
+  updateSummary();
+  renderList();
+}
+
+// ---------- events ----------
+let toastTimer;
+function toast(msg) {
+  const t = $("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove("show"), 2200);
+}
+
+$("list").addEventListener("change", (e) => {
+  const cb = e.target;
+  if (cb.type !== "checkbox") return;
+  if (cb.checked) state.ticks[cb.dataset.id] = true;
+  else delete state.ticks[cb.dataset.id];
+  save();
+  if (state.hidePacked && cb.checked) { renderList(); return; }
+  cb.closest("li").classList.toggle("packed", cb.checked);
+  updateCounts();
+});
+
+$("list").addEventListener("click", (e) => {
+  const rmId = e.target.dataset && e.target.dataset.remove;
+  if (!rmId) return;
+  state.extras = state.extras.filter((x) => x.id !== rmId);
+  delete state.ticks[rmId];
+  save();
+  renderList();
+});
+
+$("list").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const form = e.target;
+  const input = form.querySelector("input");
+  const name = input.value.trim().slice(0, 80);
+  if (!name) return;
+  const group = form.dataset.group;
+  state.extras.push({ id: "mine/" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, group });
+  save();
+  renderList();
+  const again = document.querySelector(`form.add[data-group="${group}"] input`);
+  if (again) again.focus();
+});
+
+function setNights(n) {
+  state.nights = Math.min(60, Math.max(1, n));
+  $("nights").textContent = state.nights;
+  changed();
+}
+$("nights-dec").addEventListener("click", () => setNights(state.nights - 1));
+$("nights-inc").addEventListener("click", () => setNights(state.nights + 1));
+
+$("hide-packed").addEventListener("click", (e) => {
+  state.hidePacked = !state.hidePacked;
+  e.currentTarget.setAttribute("aria-pressed", String(state.hidePacked));
+  save();
+  renderList();
+});
+
+$("toggle-all").addEventListener("click", () => {
+  const secs = [...document.querySelectorAll(".section")];
+  const collapse = secs.some((s) => s.open);
+  state.collapsed = collapse ? SECTIONS.map((s) => s.id) : [];
+  save();
+  renderList();
+});
+
+$("share").addEventListener("click", async () => {
+  const url = location.href.split("#")[0] + "#" + hashString();
+  try {
+    await navigator.clipboard.writeText(url);
+    toast("Link copied — it opens with these trip settings");
+  } catch (e) {
+    window.prompt("Copy this link:", url);
+  }
+});
+
+$("print").addEventListener("click", () => window.print());
+let printing = false;
+window.addEventListener("beforeprint", () => {
+  printing = true;
+  document.querySelectorAll(".section").forEach((s) => (s.open = true));
+});
+window.addEventListener("afterprint", () => { printing = false; renderList(); });
+
+$("reset").addEventListener("click", () => {
+  if (!confirm("Untick every item? Your own added items are kept.")) return;
+  state.ticks = {};
+  save();
+  renderList();
+});
+
+window.addEventListener("hashchange", () => { applyHash(); save(); renderSetup(); updateSummary(); renderList(); });
+
+// ---------- start ----------
+load();
+syncHash();
+renderSetup();
+updateSummary();
+renderList();
+</script>
+</body>
+</html>
