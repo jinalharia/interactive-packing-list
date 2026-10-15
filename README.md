@@ -11,7 +11,7 @@ There's no install, no build step and no external requests. It works offline, so
 - **Your own items:** use "Add your own…" in any group to add items. They're also saved on that device only.
 - **Buttons:**
   - **Hide packed** hides items you've already ticked.
-  - **Collapse/Expand all** folds or opens every section.
+  - **Collapse/Expand all** folds or opens every section and sub-section. You can also tap any section (e.g. Main luggage) or sub-section (e.g. Clothes) to fold it on its own. The page remembers what you folded, and sub-sections get a ✓ once everything in them is packed.
   - **Print** gives a clean paper checklist.
   - **Untick all** clears your ticks.
 - **Copy link** gives you a URL that opens with the same trip settings, e.g. `index.html#trip=beach&with=baby,kids&travel=flying,abroad&nights=7`. Ticks are not included.
