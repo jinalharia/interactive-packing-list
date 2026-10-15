@@ -123,9 +123,18 @@
   .section > summary .bar { grid-column: 1 / -1; margin-top: 0; height: 4px; }
   .section.complete > summary h2::after { content: " ✓"; color: var(--accent); }
 
-  .group { padding: 4px 16px 12px; border-top: 1px solid var(--border); }
-  .group h3 { font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 12px 0 4px; display: flex; justify-content: space-between; }
-  .group h3 span { font-weight: 500; font-variant-numeric: tabular-nums; }
+  .group { padding: 0 16px; border-top: 1px solid var(--border); }
+  .group[open] { padding-bottom: 12px; }
+  .group > summary {
+    list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; min-height: 46px;
+    font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
+  }
+  .group > summary::-webkit-details-marker { display: none; }
+  .group > summary .gname { flex: 1; }
+  .group > summary .grp-count { font-weight: 500; font-variant-numeric: tabular-nums; }
+  .group > summary .chev { width: 8px; height: 8px; }
+  .group[open] > summary .chev { transform: rotate(-135deg); margin-bottom: -2px; }
+  .group.complete > summary .gname::after { content: " ✓"; color: var(--accent); }
   ul.items { list-style: none; margin: 0; padding: 0; }
   ul.items li { display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed var(--border); }
   ul.items li:last-child { border-bottom: 0; }
@@ -162,9 +171,10 @@
   @media print {
     :root { --bg: #fff; --surface: #fff; --text: #000; --muted: #444; --border: #bbb; --shadow: none; }
     .top { position: static; backdrop-filter: none; border: 0; }
-    .setup, form.add, .remove, .toast, footer, .section > summary .chev, .bar { display: none !important; }
+    .setup, form.add, .remove, .toast, footer, .chev, .bar { display: none !important; }
     .section { border: 0; margin-top: 8px; }
     .group { break-inside: avoid; border: 0; padding-bottom: 4px; }
+    .group > summary { min-height: 0; padding-top: 8px; }
     .item { min-height: 0; padding: 3px 0; }
     ul.items li { border: 0; }
   }
@@ -396,13 +406,8 @@ const SECTIONS = [
       ["Airy avocado", "*", "baby kids", "", { note: "snacks" }],
       ["Night light", "*", "baby kids"],
       // added
-      ["Travel cot + sheets", "*", "baby"],
       ["Pushchair / buggy", "*", "baby kids"],
       ["Car seat", "*", "baby kids", "", { note: "if driving or hiring a car" }],
-      ["Baby carrier", "*", "baby"],
-      ["Milk / formula", "*", "baby"],
-      ["Bottles + steriliser", "*", "baby"],
-      ["Sippy cup", "*", "baby"],
       ["UV sun suit", "beach", "baby kids"],
       ["Comforter / favourite teddy", "*", "baby kids"],
       ["Stickers / colouring", "*", "kids"],
@@ -497,6 +502,7 @@ const SECTIONS = [
 /* ======================= end of data block ======================== */
 
 const STORE_KEY = "holiday-packing-list:v1";
+let printing = false;  // ignore <details> toggles while print opens everything
 const $ = (id) => document.getElementById(id);
 const slug = (s) => s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
 const words = (s) => (s || "").split(/\s+/).filter(Boolean);
@@ -524,6 +530,7 @@ let state = {
   extras: [],         // { id, name, group }
   hidePacked: false,
   collapsed: [],      // section ids
+  collapsedGroups: [], // group keys, e.g. "main/clothes"
 };
 
 function load() {
@@ -635,6 +642,20 @@ function itemRow(item, isExtra) {
   return li;
 }
 
+// Open/closed state of a <details>, remembered in state[listKey] (array of collapsed keys).
+function bindCollapse(details, listKey, key) {
+  details.open = !state[listKey].includes(key);
+  details.addEventListener("toggle", () => {
+    if (printing) return;
+    const isCollapsed = state[listKey].includes(key);
+    if (details.open && isCollapsed) state[listKey] = state[listKey].filter((x) => x !== key);
+    else if (!details.open && !isCollapsed) state[listKey] = [...state[listKey], key];
+    else return;
+    save();
+    updateToggleAll();
+  });
+}
+
 function renderList() {
   const list = $("list");
   list.innerHTML = "";
@@ -645,16 +666,7 @@ function renderList() {
     const secIds = [];
     const details = el("details", "section");
     details.dataset.sec = sec.id;
-    details.open = !state.collapsed.includes(sec.id);
-    details.addEventListener("toggle", () => {
-      if (printing) return;
-      const isCollapsed = state.collapsed.includes(sec.id);
-      if (details.open && isCollapsed) state.collapsed = state.collapsed.filter((x) => x !== sec.id);
-      else if (!details.open && !isCollapsed) state.collapsed = [...state.collapsed, sec.id];
-      else return;
-      save();
-      updateToggleAll();
-    });
+    bindCollapse(details, "collapsed", sec.id);
     const summary = el("summary");
     summary.append(el("span", "icon", sec.icon), el("h2", null, sec.name), el("span", "sec-count"), el("span", "chev"));
     const bar = el("div", "bar");
@@ -670,11 +682,12 @@ function renderList() {
       visibleByGroup[g.key] = groupIds;
       secIds.push(...groupIds);
 
-      const box = el("div", "group");
+      const box = el("details", "group");
       box.dataset.group = g.key;
-      const h3 = el("h3", null, g.name);
-      h3.appendChild(el("span", "grp-count"));
-      box.appendChild(h3);
+      bindCollapse(box, "collapsedGroups", g.key);
+      const gsum = el("summary");
+      gsum.append(el("span", "gname", g.name), el("span", "grp-count"), el("span", "chev"));
+      box.appendChild(gsum);
       const ul = el("ul", "items");
       for (const it of items) if (!(state.hidePacked && state.ticks[it.id])) ul.appendChild(itemRow(it, false));
       for (const it of extras) if (!(state.hidePacked && state.ticks[it.id])) ul.appendChild(itemRow(it, true));
@@ -717,8 +730,11 @@ function updateCounts() {
     sec.classList.toggle("complete", d === idList.length);
   }
   for (const [gKey, idList] of Object.entries(visibleByGroup)) {
-    const g = document.querySelector(`.group[data-group="${gKey}"] .grp-count`);
-    if (g) g.textContent = countDone(idList) + " / " + idList.length;
+    const g = document.querySelector(`.group[data-group="${gKey}"]`);
+    if (!g) continue;
+    const d = countDone(idList);
+    g.querySelector(".grp-count").textContent = d + " / " + idList.length;
+    g.classList.toggle("complete", d === idList.length);
   }
   $("count").textContent = done + " / " + total + " packed";
   $("bar").style.width = (total ? (100 * done) / total : 0) + "%";
@@ -815,6 +831,7 @@ $("toggle-all").addEventListener("click", () => {
   const secs = [...document.querySelectorAll(".section")];
   const collapse = secs.some((s) => s.open);
   state.collapsed = collapse ? SECTIONS.map((s) => s.id) : [];
+  state.collapsedGroups = collapse ? SECTIONS.flatMap((s) => s.groups.map((g) => g.key)) : [];
   save();
   renderList();
 });
@@ -830,10 +847,9 @@ $("share").addEventListener("click", async () => {
 });
 
 $("print").addEventListener("click", () => window.print());
-let printing = false;
 window.addEventListener("beforeprint", () => {
   printing = true;
-  document.querySelectorAll(".section").forEach((s) => (s.open = true));
+  document.querySelectorAll(".section, .group").forEach((d) => (d.open = true));
 });
 window.addEventListener("afterprint", () => { printing = false; renderList(); });
 
