@@ -124,9 +124,9 @@
   .section.complete > summary h2::after { content: " ✓"; color: var(--accent); }
 
   .group { padding: 0 16px; border-top: 1px solid var(--border); }
-  .group[open] { padding-bottom: 12px; }
+  .group[open] { padding-bottom: 10px; }
   .group > summary {
-    list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; min-height: 46px;
+    list-style: none; cursor: pointer; display: flex; align-items: center; gap: 8px; min-height: 40px;
     font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; color: var(--muted);
   }
   .group > summary::-webkit-details-marker { display: none; }
@@ -138,10 +138,10 @@
   ul.items { list-style: none; margin: 0; padding: 0; }
   ul.items li { display: flex; align-items: center; gap: 8px; border-bottom: 1px dashed var(--border); }
   ul.items li:last-child { border-bottom: 0; }
-  .item { flex: 1; display: flex; align-items: center; gap: 12px; padding: 9px 0; cursor: pointer; min-height: 44px; }
-  .item input { width: 22px; height: 22px; margin: 0; flex: none; accent-color: var(--accent); cursor: pointer; }
+  .item { flex: 1; display: flex; align-items: center; gap: 10px; padding: 5px 0; cursor: pointer; min-height: 36px; }
+  .item input { width: 20px; height: 20px; margin: 0; flex: none; accent-color: var(--accent); cursor: pointer; }
   .item .txt { flex: 1; min-width: 0; }
-  .item .note { display: block; font-size: .8rem; color: var(--muted); }
+  .item .note { display: block; font-size: .8rem; line-height: 1.25; color: var(--muted); }
   .item .qty { font-size: .82rem; font-weight: 600; color: var(--accent); background: var(--accent-soft); padding: 2px 8px; border-radius: 99px; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .item .mine { font-size: .7rem; color: var(--muted); border: 1px solid var(--border); padding: 1px 6px; border-radius: 99px; margin-left: 6px; vertical-align: 1px; }
   li.packed .name { text-decoration: line-through; color: var(--done); }
@@ -150,13 +150,25 @@
   .remove:hover { color: var(--danger); background: var(--surface-2); }
   .all-packed { color: var(--muted); font-size: .9rem; padding: 8px 0; }
 
-  form.add { display: flex; gap: 8px; margin-top: 8px; }
+  form.add { display: flex; gap: 8px; margin-top: 6px; }
   form.add input {
     flex: 1; min-width: 0; font: inherit; font-size: .9rem; padding: 8px 10px; border-radius: 10px;
     border: 1px dashed var(--border); background: transparent; color: var(--text);
   }
   form.add input::placeholder { color: var(--muted); }
   form.add button { font-size: .85rem; min-height: 36px; padding: 6px 12px; }
+
+  /* ---------- desktop: sub-sections in two columns ---------- */
+  @media (min-width: 900px) {
+    .wrap { max-width: 1080px; }
+    .groups { column-count: 2; column-gap: 0; column-rule: 1px solid var(--border); }
+    .groups .group { break-inside: avoid; }
+    /* a section with only one sub-section (e.g. Morning to-do) splits its items instead */
+    .groups.single { column-count: 1; }
+    .groups.single ul.items { column-count: 2; column-gap: 32px; }
+    .groups.single ul.items li { break-inside: avoid; }
+    .groups.single ul.items li:last-child { border-bottom: 1px dashed var(--border); }
+  }
 
   .empty { text-align: center; color: var(--muted); padding: 32px 16px; }
   footer { color: var(--muted); font-size: .8rem; text-align: center; margin-top: 28px; }
@@ -673,6 +685,8 @@ function renderList() {
     bar.appendChild(el("span"));
     summary.appendChild(bar);
     details.appendChild(summary);
+    const groups = el("div", "groups");  // laid out in two columns on desktop
+    details.appendChild(groups);
 
     for (const g of sec.groups) {
       const items = g.items.filter(isVisible);
@@ -705,9 +719,10 @@ function renderList() {
       add.type = "submit";
       form.append(input, add);
       box.appendChild(form);
-      details.appendChild(box);
+      groups.appendChild(box);
     }
     if (!secIds.length) continue;
+    groups.classList.toggle("single", groups.children.length === 1);
     visibleBySection[sec.id] = secIds;
     list.appendChild(details);
   }
